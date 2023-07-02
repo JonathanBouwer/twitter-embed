@@ -1,31 +1,122 @@
-<body style="margin-left: auto;margin-right: auto;width: 100%;background-color: rgb(30, 39, 50);color: rgb(247, 249, 249);">
-<div style="font-size: 2em;margin-left: auto;margin-right: auto;width: 570px;" >
-Tweet URL: <input id="urlInput" style="font-size: 1em"></input>
-</div>
-<div id="tweets" style="margin-left: auto;margin-right: auto; width: 550px;" >
-<script id="loadTweet" async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script> 
-<blockquote class="twitter-tweet" data-theme="dark">
-  <a href="https://twitter.com/x/status/807811447862468608"></a> 
-</blockquote>
-</div>
-</body>
-<script>
-    const urlInput = document.getElementById("urlInput");
-    const tweetContainer = document.getElementById("tweets");
-    const reloadTweet = () => {
-        let url = urlInput.value;
-        if (!url.includes("twitter.com/")) {
-            return;
-        }
-        const newTweet = document.createElement("a");
-        newTweet.href = url.split("?")[0];
-        const newTweetParent = document.createElement("blockquote");
-        newTweetParent.classList.add("twitter-tweet");
-        newTweetParent.setAttribute("data-theme", "dark");
-        newTweetParent.appendChild(newTweet);
-        tweetContainer.prepend(newTweetParent);
-        twttr.widgets.load(tweetContainer);        
-        setTimeout(() => urlInput.value = "", 250); // Sleep to make user think its processing
-    }
-    urlInput.addEventListener("input", reloadTweet);
-</script>
+<html lang="en-US">
+    <head>
+        <head>
+            <meta charset="utf-8" />
+            <title>Elon's Failure</title>
+        </head>
+        <script id="loadTweet" async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script> 
+        <script defer>
+            const setup = () => {
+                const urlInput = document.getElementById("urlInput");
+                const tweetContainer = document.getElementById("tweets");
+                const seenURLS = ["https://twitter.com/dril/status/922321981"];
+                const loadTweetFromUrl = () => {
+                    url = prepareTweet(urlInput.value);
+                    if (!url) return;
+                    seenURLS.push(url);
+                    twttr.widgets.load(tweetContainer);
+                    setTimeout(() => urlInput.value = "", 250); // Sleep to make user think its processing
+                } 
+                const prepareTweet = (inputURL) => {
+                    if (!inputURL.includes("twitter.com/")) {
+                        return null;
+                    }
+                    let url = inputURL;
+                    let newTweetElement;
+                    url = url.split("?")[0];
+                    if (url.includes("/status/")) {
+                        const newTweet = document.createElement("a");
+                        newTweet.href = url;
+                        newTweetElement = document.createElement("blockquote");
+                        newTweetElement.classList.add("twitter-tweet");
+                        newTweetElement.appendChild(newTweet);
+                    } else {
+                        newTweetElement = document.createElement("a");
+                        url = url.endsWith("/") ? url.substr(0, url.length-1) : url;
+                        newTweetElement.href = url;
+                        newTweetElement.classList.add("twitter-timeline");
+                        newTweetElement.setAttribute("data-chrome", "noheader");
+                    }
+                    newTweetElement.setAttribute("data-theme", isDark ? "dark" : "light");
+                    tweetContainer.prepend(newTweetElement);
+                    return url;
+                }
+                urlInput.addEventListener("input", loadTweetFromUrl);
+                
+                const lightButton = document.getElementById("lightButton");
+                let isDark = true;
+                const searchIds = ["mainBody", "lightButton"];
+                const swapColor = () => {
+                    if (isDark) {
+                        for (const id of searchIds) {
+                            const el = document.getElementById(id);
+                            el.classList.remove("dark");
+                            el.classList.add("light");
+                        }
+                        lightButton.textContent = "Dark";
+                        isDark = false;
+                    } else {
+                        for (const id of searchIds) {
+                            const el = document.getElementById(id);
+                            el.classList.remove("light");
+                            el.classList.add("dark");
+                        }
+                        lightButton.textContent = "Light";
+                        isDark = true;        
+                    }
+                    tweetContainer.innerHTML = "";
+                    urlInput.value = "Loading...";
+                    for (const url of seenURLS) {
+                        prepareTweet(url);
+                    }
+                    tweetContainer.style.display = "none";
+                    twttr.widgets.load(tweetContainer);
+                    setTimeout(() => {urlInput.value = ""; tweetContainer.style.display = "";}, Math.max(500, 100*seenURLS.length)); // Sleep to make user think its processing
+                }
+                lightButton.addEventListener("click", swapColor);
+            }
+            document.addEventListener("DOMContentLoaded", setup);
+        </script>
+        <style>
+            body {
+                margin-left: auto;
+                margin-right: auto;
+                width: 100%;
+            }
+            button {
+                padding: 5px;
+                font-size: 2em;
+                cursor: pointer;
+            }
+            .light {
+                background-color: rgb(255, 255, 255);
+                color: rgb(15, 20, 25)
+            }
+            .dark {
+                background-color: rgb(21, 32, 43);
+                color: rgb(247, 249, 249);
+            }
+        </style>
+    </head>
+    <body id="mainBody" class="dark">
+        <div style="position: absolute; right: 1em; top: 1em;">
+            <button id="lightButton" class="dark">Light</i></button>
+        </div>
+
+        <div style="font-size: 2em;margin-left: auto;margin-right: auto;width: 570px;height: 50px;display: flex;align-items: center;justify-content: center;">
+            <div style="float: left;">Tweet URL:&nbsp;</div>
+            <div style="float: none;overflow: hidden;">
+                <input autofocus id="urlInput" style="font-size: 1em;width: 100%;">
+            </div>
+        </div>
+        <div id="tweets" style="margin-left: auto;margin-right: auto; width: 550px;">
+            <blockquote class="twitter-tweet" data-theme="dark">
+                <a href="https://twitter.com/dril/status/922321981"></a> 
+            </blockquote>
+            <a class="twitter-timeline" data-theme="dark" data-chrome="noheader transparent"
+              href="https://twitter.com/dril">
+            Tweets by @dril
+            </a>
+        </div>
+    </body>
+</html>
