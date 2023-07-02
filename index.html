@@ -1,0 +1,31 @@
+<body style="margin-left: auto;margin-right: auto;width: 100%;background-color: rgb(30, 39, 50);color: rgb(247, 249, 249);">
+<div style="font-size: 2em;margin-left: auto;margin-right: auto;width: 570px;" >
+Tweet URL: <input id="urlInput" style="font-size: 1em"></input>
+</div>
+<div id="tweets" style="margin-left: auto;margin-right: auto; width: 550px;" >
+<script id="loadTweet" async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script> 
+<blockquote class="twitter-tweet" data-theme="dark">
+  <a href="https://twitter.com/x/status/807811447862468608"></a> 
+</blockquote>
+</div>
+</body>
+<script>
+    const urlInput = document.getElementById("urlInput");
+    const tweetContainer = document.getElementById("tweets");
+    const reloadTweet = () => {
+        let url = urlInput.value;
+        if (!url.includes("twitter.com/")) {
+            return;
+        }
+        const newTweet = document.createElement("a");
+        newTweet.href = url.split("?")[0];
+        const newTweetParent = document.createElement("blockquote");
+        newTweetParent.classList.add("twitter-tweet");
+        newTweetParent.setAttribute("data-theme", "dark");
+        newTweetParent.appendChild(newTweet);
+        tweetContainer.prepend(newTweetParent);
+        twttr.widgets.load(tweetContainer);        
+        setTimeout(() => urlInput.value = "", 250); // Sleep to make user think its processing
+    }
+    urlInput.addEventListener("input", reloadTweet);
+</script>
